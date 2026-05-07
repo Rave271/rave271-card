@@ -1,7 +1,8 @@
 {
   "version": 2,
-  "routes": [
-    { "src": "/api/card", "dest": "/api/card.js" },
-    { "src": "/", "dest": "/api/card.js" }
-  ]
+  "functions": {
+    "api/card.js": {
+      "runtime": "nodejs18.x"
+    }
+  }
 }
