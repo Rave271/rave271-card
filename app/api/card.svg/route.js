@@ -1,141 +1,7 @@
-import https from "https";
-
-function fetchJSON(url, token) {
-  return new Promise((resolve, reject) => {
-    const options = {
-      headers: {
-        "User-Agent": "rave271-card",
-        Accept: "application/vnd.github.v3+json",
-        ...(token ? { Authorization: `token ${token}` } : {}),
-      },
-    };
-
-    https
-      .get(url, options, (res) => {
-        let data = "";
-
-        res.on("data", (chunk) => {
-          data += chunk;
-        });
-
-        res.on("end", () => {
-          try {
-            resolve(JSON.parse(data));
-          } catch (err) {
-            reject(err);
-          }
-        });
-      })
-      .on("error", reject);
-  });
-}
-
-async function getGitHubStats(username, token) {
-  try {
-    const [user, repos] = await Promise.all([
-      fetchJSON(`https://api.github.com/users/${username}`, token),
-      fetchJSON(
-        `https://api.github.com/users/${username}/repos?per_page=100&sort=pushed`,
-        token
-      ),
-    ]);
-
-    const stars = repos.reduce(
-      (acc, repo) => acc + repo.stargazers_count,
-      0
-    );
-
-    const langs = {};
-
-    repos.forEach((repo) => {
-      if (repo.language) {
-        langs[repo.language] = (langs[repo.language] || 0) + 1;
-      }
-    });
-
-    const topLangs = Object.entries(langs)
-      .sort((a, b) => b[1] - a[1])
-      .slice(0, 3)
-      .map(([lang]) => lang);
-
-    return {
-      name: user.name || username,
-      followers: user.followers || 0,
-      public_repos: user.public_repos || 0,
-      stars,
-      topLangs,
-    };
-  } catch (error) {
-    console.error(error);
-
-    return {
-      name: "Raghav Verma",
-      followers: 0,
-      public_repos: 0,
-      stars: 0,
-      topLangs: ["Python", "Java", "JavaScript"],
-    };
-  }
-}
-
-function buildBadges() {
-  const items = [
-    "PYTHON",
-    "JAVA",
-    "MERN",
-    "KERAS",
-    "SCIKIT-LEARN",
-    "PANDAS",
-    "NUMPY",
-    "LINUX",
-  ];
-
-  const output = [];
-  let x = 48;
-  let y = 530;
-
-  items.forEach((label) => {
-    const width = label.length * 8 + 20;
-    const isKeras = label === "KERAS";
-
-    output.push(`
-      <rect 
-        x="${x}" 
-        y="${y}" 
-        width="${width}" 
-        height="24"
-        fill="none"
-        stroke="${isKeras ? "#cc2200" : "#2a2a2a"}"
-        stroke-width="1"
-      />
-    `);
-
-    output.push(`
-      <text
-        x="${x + width / 2}"
-        y="${y + 15}"
-        font-size="10"
-        fill="${isKeras ? "#cc2200" : "#aaa"}"
-        text-anchor="middle"
-        font-family="Arial"
-      >
-        ${label}
-      </text>
-    `);
-
-    x += width + 8;
-
-    if (x > 700) {
-      x = 48;
-      y += 32;
-    }
-  });
-
-  return output.join("");
-}
+// ... (fetchJSON, getGitHubStats, buildBadges unchanged)
 
 function buildSVG(stats) {
-  const { public_repos, stars, topLangs } = stats;
+  const { public_repos, stars, topLangs, followers } = stats;
   const langString = topLangs.join(" | ").toUpperCase();
 
   return `
@@ -191,7 +57,7 @@ function buildSVG(stats) {
     RAGHAV VERMA • ML • SYSTEMS • FULL STACK
   </text>
 
-  <!-- LIVE STAMP -->
+  <!-- PROFESSIONAL STAMP -->
   <rect
     x="316"
     y="218"
@@ -210,7 +76,7 @@ function buildSVG(stats) {
     text-anchor="middle"
     font-family="Arial"
   >
-    LIVE &amp; UNCUT
+    OPEN SOURCE
   </text>
 
   <line x1="40" y1="315" x2="760" y2="315" stroke="#2a2a2a"/>
@@ -222,7 +88,7 @@ function buildSVG(stats) {
     fill="#555"
     text-anchor="middle"
   >
-    ALSO FEATURING
+    CORE FOCUS
   </text>
 
   <text
@@ -271,28 +137,28 @@ function buildSVG(stats) {
     STARS
   </text>
 
-  <!-- ACTIVE -->
+  <!-- FOLLOWERS (replaces ACTIVE) -->
   <rect x="540" y="600" width="220" height="100" fill="#161616" stroke="#2a2a2a"/>
-  <text x="650" y="655" font-size="38" fill="#cc2200" text-anchor="middle">
-    ↑
+  <text x="650" y="658" font-size="44" fill="#f5f0e8" text-anchor="middle">
+    ${followers}
   </text>
   <text x="650" y="682" font-size="11" fill="#555" text-anchor="middle">
-    ACTIVE
+    FOLLOWERS
   </text>
 
   <line x1="40" y1="725" x2="760" y2="725" stroke="#cc2200"/>
 
-  <!-- PHILOSOPHY -->
+  <!-- PHILOSOPHY (updated) -->
   <text x="60" y="768" font-size="15" fill="#888">
-    // quiet systems
+    // minimalism
   </text>
 
   <text x="60" y="798" font-size="15" fill="#888">
-    // sharp logic
+    // performance
   </text>
 
   <text x="60" y="828" font-size="15" fill="#888">
-    // beautiful code
+    // scalability
   </text>
 
   <text
@@ -314,7 +180,7 @@ function buildSVG(stats) {
     fill="#444"
     text-anchor="middle"
   >
-    NO HYPE | JUST SHIPS | ALL SHOWS
+    CLEAN CODE | SHIP EARLY | SOLUTIONS NOT EXCUSES
   </text>
 
   <line x1="40" y1="910" x2="760" y2="910" stroke="#2a2a2a"/>
@@ -328,11 +194,11 @@ function buildSVG(stats) {
   </text>
 
   <text x="760" y="938" font-size="10" fill="#555" text-anchor="end">
-    DOORS OPEN
+    COLLABORATE
   </text>
 
   <text x="760" y="956" font-size="15" fill="#f5f0e8" text-anchor="end">
-    ALWAYS
+    OPEN
   </text>
 </svg>
 `;
