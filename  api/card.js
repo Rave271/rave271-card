@@ -1,4 +1,3 @@
-module.exports = (req, res) => {
-  res.setHeader("Content-Type", "text/plain");
+export default function handler(req, res) {
   res.status(200).send("API WORKS");
-};
+}
