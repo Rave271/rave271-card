@@ -1,6 +1,5 @@
 import https from "https";
 
-// Prevent Next.js from statically prerendering this API route
 export const dynamic = 'force-dynamic';
 
 function fetchJSON(url, token) {
@@ -285,40 +284,25 @@ function buildSVG(stats) {
 
   <line x1="40" y1="725" x2="760" y2="725" stroke="#cc2200"/>
 
-  <!-- PHILOSOPHY (restored original wording) -->
-  <text x="60" y="768" font-size="15" fill="#888">
-    // quiet systems
-  </text>
+  <!-- ========== COSMETIC WAVE (replaces text) ========== -->
+  <path d="M40 780 
+           C 100 740, 140 820, 200 780 
+           C 260 740, 300 820, 360 780 
+           C 420 740, 460 820, 520 780 
+           C 580 740, 620 820, 680 780 
+           C 720 740, 740 800, 760 770"
+        fill="none" stroke="#cc2200" stroke-width="2" opacity="0.6"/>
 
-  <text x="60" y="798" font-size="15" fill="#888">
-    // sharp logic
-  </text>
+  <path d="M40 810 
+           C 100 850, 140 770, 200 810 
+           C 260 850, 300 770, 360 810 
+           C 420 850, 460 770, 520 810 
+           C 580 850, 620 770, 680 810 
+           C 720 850, 740 790, 760 820"
+        fill="none" stroke="#cc2200" stroke-width="1.5" opacity="0.3"/>
 
-  <text x="60" y="828" font-size="15" fill="#888">
-    // beautiful code
-  </text>
-
-  <text
-    x="760"
-    y="798"
-    font-size="12"
-    fill="#444"
-    text-anchor="end"
-  >
-    ${langString}
-  </text>
-
-  <line x1="40" y1="855" x2="760" y2="855" stroke="#cc2200"/>
-
-  <text
-    x="400"
-    y="885"
-    font-size="11"
-    fill="#444"
-    text-anchor="middle"
-  >
-    CLEAN CODE | SHIP EARLY | SOLUTIONS NOT EXCUSES
-  </text>
+  <circle cx="400" cy="795" r="4" fill="#cc2200" opacity="0.8"/>
+  <!-- ================================================== -->
 
   <line x1="40" y1="910" x2="760" y2="910" stroke="#2a2a2a"/>
 
@@ -352,7 +336,7 @@ export async function GET() {
     status: 200,
     headers: {
       "Content-Type": "image/svg+xml",
-      "Cache-Control": "no-cache, no-store, must-revalidate",
+      "Cache-Control": "s-maxage=3600, stale-while-revalidate",
     },
   });
 }
