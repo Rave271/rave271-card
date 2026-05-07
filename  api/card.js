@@ -152,7 +152,7 @@ function buildBadges() {
   return out.join("\n  ");
 }
 
-module.exports = async (req, res) => {
+export default async function handler(req, res) {
   const username = "Rave271";
   const token = process.env.GITHUB_TOKEN;
   const stats = await getGitHubStats(username, token);

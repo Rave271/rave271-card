@@ -1,5 +1,6 @@
 {
   "name": "rave271-card",
   "version": "1.0.0",
-  "description": "Live GitHub profile card for Rave271"
+  "description": "Live GitHub profile card for Rave271",
+  "type": "module"
 }
