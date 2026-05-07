@@ -1,37 +1,46 @@
 import https from "https";
 
-export const dynamic = 'force-dynamic';
+export const dynamic = "force-dynamic";
 
+/* ---------------- FETCH JSON ---------------- */
 function fetchJSON(url, token) {
   return new Promise((resolve, reject) => {
-    const options = {
-      headers: {
-        "User-Agent": "rave271-card",
-        Accept: "application/vnd.github.v3+json",
-        ...(token ? { Authorization: `token ${token}` } : {}),
-      },
+    const headers = {
+      "User-Agent": "rave271-card",
+      Accept: "application/json",
     };
 
+    if (token && url.includes("api.github.com")) {
+      headers.Authorization = `token ${token}`;
+    }
+
     https
-      .get(url, options, (res) => {
-        let data = "";
+      .get(
+        url,
+        {
+          headers,
+        },
+        (res) => {
+          let data = "";
 
-        res.on("data", (chunk) => {
-          data += chunk;
-        });
+          res.on("data", (chunk) => {
+            data += chunk;
+          });
 
-        res.on("end", () => {
-          try {
-            resolve(JSON.parse(data));
-          } catch (err) {
-            reject(err);
-          }
-        });
-      })
+          res.on("end", () => {
+            try {
+              resolve(JSON.parse(data));
+            } catch (err) {
+              reject(err);
+            }
+          });
+        }
+      )
       .on("error", reject);
   });
 }
 
+/* ---------------- GITHUB STATS ---------------- */
 async function getGitHubStats(username, token) {
   try {
     const [user, repos] = await Promise.all([
@@ -68,7 +77,7 @@ async function getGitHubStats(username, token) {
       topLangs,
     };
   } catch (error) {
-    console.error(error);
+    console.error("GitHub fetch error:", error);
 
     return {
       name: "Raghav Verma",
@@ -80,6 +89,47 @@ async function getGitHubStats(username, token) {
   }
 }
 
+/* ---------------- LAST.FM ---------------- */
+async function getNowPlaying() {
+  const apiKey = "18ee6ffe16e046b94dccef21b8cd7896"; // replace this
+  const username = "Rave271"; // replace this
+
+  try {
+    const data = await fetchJSON(
+      `https://ws.audioscrobbler.com/2.0/?method=user.getrecenttracks&user=${username}&api_key=${apiKey}&format=json&limit=1`
+    );
+
+    const track = data?.recenttracks?.track?.[0];
+
+    if (!track) {
+      return {
+        song: "NO SIGNAL",
+        artist: "OFFLINE",
+        playing: false,
+      };
+    }
+
+    const isNowPlaying =
+      track["@attr"]?.nowplaying === "true";
+
+    return {
+      song: track.name || "UNKNOWN TRACK",
+      artist:
+        track.artist["#text"] || "UNKNOWN ARTIST",
+      playing: isNowPlaying,
+    };
+  } catch (error) {
+    console.error("Last.fm error:", error);
+
+    return {
+      song: "SIGNAL LOST",
+      artist: "RETRYING...",
+      playing: false,
+    };
+  }
+}
+
+/* ---------------- SKILL BADGES ---------------- */
 function buildBadges() {
   const items = [
     "PYTHON",
@@ -136,9 +186,10 @@ function buildBadges() {
   return output.join("");
 }
 
-function buildSVG(stats) {
-  const { public_repos, stars, topLangs, followers } = stats;
-  const langString = topLangs.join(" | ").toUpperCase();
+/* ---------------- SVG ---------------- */
+function buildSVG(stats, music) {
+  const { public_repos, stars, followers } = stats;
+  const { song, artist, playing } = music;
 
   return `
 <svg 
@@ -199,7 +250,6 @@ function buildSVG(stats) {
     RAGHAV VERMA • ML • SYSTEMS • FULL STACK
   </text>
 
-  <!-- STAMP -->
   <rect
     x="316"
     y="218"
@@ -252,7 +302,7 @@ function buildSVG(stats) {
     text-anchor="middle"
     font-family="Impact"
   >
-    SYSTEMS &amp; FULL STACK
+    SYSTEMS & FULL STACK
   </text>
 
   <line x1="40" y1="505" x2="760" y2="505" stroke="#2a2a2a"/>
@@ -290,8 +340,52 @@ function buildSVG(stats) {
 
   <line x1="40" y1="725" x2="760" y2="725" stroke="#cc2200"/>
 
-  <!-- DOT MATRIX GRID (cosmetic) -->
-  <rect x="40" y="735" width="720" height="165" fill="url(#dotGrid)" opacity="0.7"/>
+  <!-- MUSIC PANEL -->
+  <rect x="40" y="735" width="720" height="165" fill="url(#dotGrid)" opacity="0.5"/>
+
+  <text
+    x="400"
+    y="780"
+    font-size="12"
+    fill="#cc2200"
+    text-anchor="middle"
+    font-family="Arial"
+  >
+    LIVE TRANSMISSION
+  </text>
+
+  <text
+    x="400"
+    y="825"
+    font-size="28"
+    fill="#f5f0e8"
+    text-anchor="middle"
+    font-family="Impact"
+  >
+    ${song.toUpperCase().slice(0, 30)}
+  </text>
+
+  <text
+    x="400"
+    y="855"
+    font-size="14"
+    fill="#888"
+    text-anchor="middle"
+    font-family="Arial"
+  >
+    ${artist.toUpperCase().slice(0, 35)}
+  </text>
+
+  <text
+    x="400"
+    y="885"
+    font-size="10"
+    fill="${playing ? "#00ff88" : "#555"}"
+    text-anchor="middle"
+    font-family="Arial"
+  >
+    ${playing ? "SIGNAL ACTIVE" : "LAST TRANSMISSION"}
+  </text>
 
   <line x1="40" y1="910" x2="760" y2="910" stroke="#2a2a2a"/>
 
@@ -314,18 +408,24 @@ function buildSVG(stats) {
 `;
 }
 
+/* ---------------- API ROUTE ---------------- */
 export async function GET() {
   const username = "Rave271";
   const token = process.env.GITHUB_TOKEN;
 
-  const stats = await getGitHubStats(username, token);
-  const svg = buildSVG(stats);
+  const [stats, music] = await Promise.all([
+    getGitHubStats(username, token),
+    getNowPlaying(),
+  ]);
+
+  const svg = buildSVG(stats, music);
 
   return new Response(svg, {
     status: 200,
     headers: {
       "Content-Type": "image/svg+xml",
-      "Cache-Control": "s-maxage=3600, stale-while-revalidate",
+      "Cache-Control":
+        "s-maxage=3600, stale-while-revalidate",
     },
   });
 }
