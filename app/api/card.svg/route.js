@@ -302,7 +302,7 @@ function buildSVG(stats, music) {
     text-anchor="middle"
     font-family="Impact"
   >
-    SYSTEMS & FULL STACK
+    SYSTEMS &amp; FULL STACK
   </text>
 
   <line x1="40" y1="505" x2="760" y2="505" stroke="#2a2a2a"/>
