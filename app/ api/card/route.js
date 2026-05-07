@@ -2,7 +2,7 @@ import https from "https";
 
 function fetchJSON(url, token) {
   return new Promise((resolve, reject) => {
-    const opts = {
+    const options = {
       headers: {
         "User-Agent": "rave271-card",
         Accept: "application/vnd.github.v3+json",
@@ -10,21 +10,23 @@ function fetchJSON(url, token) {
       },
     };
 
-    https.get(url, opts, (res) => {
-      let data = "";
+    https
+      .get(url, options, (res) => {
+        let data = "";
 
-      res.on("data", (chunk) => {
-        data += chunk;
-      });
+        res.on("data", (chunk) => {
+          data += chunk;
+        });
 
-      res.on("end", () => {
-        try {
-          resolve(JSON.parse(data));
-        } catch (err) {
-          reject(err);
-        }
-      });
-    }).on("error", reject);
+        res.on("end", () => {
+          try {
+            resolve(JSON.parse(data));
+          } catch (err) {
+            reject(err);
+          }
+        });
+      })
+      .on("error", reject);
   });
 }
 
@@ -88,7 +90,7 @@ function buildBadges() {
     "LINUX",
   ];
 
-  const out = [];
+  const output = [];
   let x = 48;
   let y = 530;
 
@@ -96,27 +98,26 @@ function buildBadges() {
     const width = label.length * 8 + 20;
     const isKeras = label === "KERAS";
 
-    out.push(`
+    output.push(`
       <rect 
         x="${x}" 
         y="${y}" 
         width="${width}" 
-        height="24" 
-        fill="none" 
-        stroke="${isKeras ? "#cc2200" : "#2a2a2a"}" 
+        height="24"
+        fill="none"
+        stroke="${isKeras ? "#cc2200" : "#2a2a2a"}"
         stroke-width="1"
       />
     `);
 
-    out.push(`
+    output.push(`
       <text
         x="${x + width / 2}"
         y="${y + 15}"
-        font-family="Arial"
         font-size="10"
         fill="${isKeras ? "#cc2200" : "#aaa"}"
         text-anchor="middle"
-        letter-spacing="2"
+        font-family="Arial"
       >
         ${label}
       </text>
@@ -130,168 +131,211 @@ function buildBadges() {
     }
   });
 
-  return out.join("");
+  return output.join("");
 }
 
 function buildSVG(stats) {
   const { public_repos, stars, topLangs } = stats;
-  const langStr = topLangs.join("  ·  ");
-
-  const width = 800;
-  const height = 980;
+  const langString = topLangs.join(" | ").toUpperCase();
 
   return `
-  <svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}">
-    
-    <rect width="100%" height="100%" fill="#0f0f0f"/>
+<svg 
+  xmlns="http://www.w3.org/2000/svg" 
+  width="800" 
+  height="980" 
+  viewBox="0 0 800 980"
+>
+  <rect width="100%" height="100%" fill="#0f0f0f"/>
 
-    <!-- cream header -->
-    <rect x="40" y="30" width="720" height="260" fill="#f5f0e8" stroke="#1a1a1a" stroke-width="5"/>
-    <rect x="46" y="36" width="708" height="248" fill="none" stroke="#1a1a1a" stroke-width="2"/>
+  <!-- HEADER -->
+  <rect 
+    x="40" 
+    y="30" 
+    width="720" 
+    height="260" 
+    fill="#f5f0e8"
+    stroke="#1a1a1a"
+    stroke-width="5"
+  />
 
-    <text 
-      x="400" 
-      y="155" 
-      font-size="110" 
-      font-weight="900"
-      fill="#1a1a1a"
-      text-anchor="middle"
-      font-family="Impact, Arial"
-    >
-      RAVE 271
-    </text>
+  <rect
+    x="46"
+    y="36"
+    width="708"
+    height="248"
+    fill="none"
+    stroke="#1a1a1a"
+    stroke-width="2"
+  />
 
-    <text
-      x="400"
-      y="200"
-      font-size="14"
-      fill="#555"
-      text-anchor="middle"
-      letter-spacing="6"
-      font-family="Arial"
-    >
-      RAGHAV VERMA · ML · SYSTEMS · FULL STACK
-    </text>
+  <text
+    x="400"
+    y="155"
+    font-size="110"
+    font-weight="900"
+    fill="#1a1a1a"
+    text-anchor="middle"
+    font-family="Impact, Arial"
+  >
+    RAVE 271
+  </text>
 
-    <rect x="316" y="218" width="168" height="26" fill="none" stroke="#cc2200" stroke-width="2"/>
+  <text
+    x="400"
+    y="200"
+    font-size="14"
+    fill="#555"
+    text-anchor="middle"
+    font-family="Arial"
+  >
+    RAGHAV VERMA • ML • SYSTEMS • FULL STACK
+  </text>
 
-    <text
-      x="400"
-      y="236"
-      font-size="11"
-      fill="#cc2200"
-      text-anchor="middle"
-      letter-spacing="3"
-      font-family="Arial"
-    >
-      LIVE & UNCUT
-    </text>
+  <!-- LIVE STAMP -->
+  <rect
+    x="316"
+    y="218"
+    width="168"
+    height="26"
+    fill="none"
+    stroke="#cc2200"
+    stroke-width="2"
+  />
 
-    <line x1="40" y1="315" x2="760" y2="315" stroke="#2a2a2a"/>
+  <text
+    x="400"
+    y="236"
+    font-size="11"
+    fill="#cc2200"
+    text-anchor="middle"
+    font-family="Arial"
+  >
+    LIVE &amp; UNCUT
+  </text>
 
-    <text
-      x="400"
-      y="350"
-      font-size="12"
-      fill="#555"
-      text-anchor="middle"
-      letter-spacing="4"
-      font-family="Courier New"
-    >
-      — ALSO FEATURING —
-    </text>
+  <line x1="40" y1="315" x2="760" y2="315" stroke="#2a2a2a"/>
 
-    <text
-      x="400"
-      y="400"
-      font-size="42"
-      fill="#f5f0e8"
-      text-anchor="middle"
-      font-family="Impact"
-    >
-      MACHINE LEARNING
-    </text>
+  <text
+    x="400"
+    y="350"
+    font-size="12"
+    fill="#555"
+    text-anchor="middle"
+  >
+    ALSO FEATURING
+  </text>
 
-    <text
-      x="400"
-      y="475"
-      font-size="42"
-      fill="#f5f0e8"
-      text-anchor="middle"
-      font-family="Impact"
-    >
-      SYSTEMS & FULL STACK
-    </text>
+  <text
+    x="400"
+    y="400"
+    font-size="42"
+    fill="#f5f0e8"
+    text-anchor="middle"
+    font-family="Impact"
+  >
+    MACHINE LEARNING
+  </text>
 
-    <line x1="40" y1="505" x2="760" y2="505" stroke="#2a2a2a"/>
+  <text
+    x="400"
+    y="475"
+    font-size="42"
+    fill="#f5f0e8"
+    text-anchor="middle"
+    font-family="Impact"
+  >
+    SYSTEMS &amp; FULL STACK
+  </text>
 
-    ${buildBadges()}
+  <line x1="40" y1="505" x2="760" y2="505" stroke="#2a2a2a"/>
 
-    <line x1="40" y1="585" x2="760" y2="585" stroke="#2a2a2a"/>
+  ${buildBadges()}
 
-    <!-- repo box -->
-    <rect x="40" y="600" width="220" height="100" fill="#161616" stroke="#2a2a2a"/>
-    <text x="150" y="658" font-size="44" fill="#f5f0e8" text-anchor="middle">${public_repos}</text>
-    <text x="150" y="682" font-size="11" fill="#555" text-anchor="middle">REPOS</text>
+  <line x1="40" y1="585" x2="760" y2="585" stroke="#2a2a2a"/>
 
-    <!-- stars box -->
-    <rect x="290" y="600" width="220" height="100" fill="#161616" stroke="#2a2a2a"/>
-    <text x="400" y="658" font-size="44" fill="#f5f0e8" text-anchor="middle">${stars}</text>
-    <text x="400" y="682" font-size="11" fill="#555" text-anchor="middle">STARS</text>
+  <!-- REPOS -->
+  <rect x="40" y="600" width="220" height="100" fill="#161616" stroke="#2a2a2a"/>
+  <text x="150" y="658" font-size="44" fill="#f5f0e8" text-anchor="middle">
+    ${public_repos}
+  </text>
+  <text x="150" y="682" font-size="11" fill="#555" text-anchor="middle">
+    REPOS
+  </text>
 
-    <!-- active box -->
-    <rect x="540" y="600" width="220" height="100" fill="#161616" stroke="#2a2a2a"/>
-    <text x="650" y="655" font-size="38" fill="#cc2200" text-anchor="middle">↑</text>
-    <text x="650" y="682" font-size="11" fill="#555" text-anchor="middle">ACTIVE</text>
+  <!-- STARS -->
+  <rect x="290" y="600" width="220" height="100" fill="#161616" stroke="#2a2a2a"/>
+  <text x="400" y="658" font-size="44" fill="#f5f0e8" text-anchor="middle">
+    ${stars}
+  </text>
+  <text x="400" y="682" font-size="11" fill="#555" text-anchor="middle">
+    STARS
+  </text>
 
-    <line x1="40" y1="725" x2="760" y2="725" stroke="#cc2200"/>
+  <!-- ACTIVE -->
+  <rect x="540" y="600" width="220" height="100" fill="#161616" stroke="#2a2a2a"/>
+  <text x="650" y="655" font-size="38" fill="#cc2200" text-anchor="middle">
+    ↑
+  </text>
+  <text x="650" y="682" font-size="11" fill="#555" text-anchor="middle">
+    ACTIVE
+  </text>
 
-    <text x="60" y="768" font-size="15" fill="#888">// quiet systems</text>
-    <text x="60" y="798" font-size="15" fill="#888">// sharp logic</text>
-    <text x="60" y="828" font-size="15" fill="#888">// beautiful code</text>
+  <line x1="40" y1="725" x2="760" y2="725" stroke="#cc2200"/>
 
-    <text
-      x="760"
-      y="798"
-      font-size="12"
-      fill="#444"
-      text-anchor="end"
-    >
-      ${langStr.toUpperCase()}
-    </text>
+  <!-- PHILOSOPHY -->
+  <text x="60" y="768" font-size="15" fill="#888">
+    // quiet systems
+  </text>
 
-    <line x1="40" y1="855" x2="760" y2="855" stroke="#cc2200"/>
+  <text x="60" y="798" font-size="15" fill="#888">
+    // sharp logic
+  </text>
 
-    <text
-      x="400"
-      y="885"
-      font-size="11"
-      fill="#444"
-      text-anchor="middle"
-    >
-      ★ NO HYPE · JUST SHIPS · ALL SHOWS ★
-    </text>
+  <text x="60" y="828" font-size="15" fill="#888">
+    // beautiful code
+  </text>
 
-    <line x1="40" y1="910" x2="760" y2="910" stroke="#2a2a2a"/>
+  <text
+    x="760"
+    y="798"
+    font-size="12"
+    fill="#444"
+    text-anchor="end"
+  >
+    ${langString}
+  </text>
 
-    <text x="40" y="938" font-size="16" fill="#f5f0e8">
-      GITHUB.COM/RAVE271
-    </text>
+  <line x1="40" y1="855" x2="760" y2="855" stroke="#cc2200"/>
 
-    <text x="40" y="956" font-size="11" fill="#555">
-      ALL REPOS. ALL NIGHTS.
-    </text>
+  <text
+    x="400"
+    y="885"
+    font-size="11"
+    fill="#444"
+    text-anchor="middle"
+  >
+    NO HYPE | JUST SHIPS | ALL SHOWS
+  </text>
 
-    <text x="760" y="938" font-size="10" fill="#555" text-anchor="end">
-      DOORS OPEN
-    </text>
+  <line x1="40" y1="910" x2="760" y2="910" stroke="#2a2a2a"/>
 
-    <text x="760" y="956" font-size="15" fill="#f5f0e8" text-anchor="end">
-      ALWAYS
-    </text>
+  <text x="40" y="938" font-size="16" fill="#f5f0e8">
+    GITHUB.COM/RAVE271
+  </text>
 
-  </svg>
-  `;
+  <text x="40" y="956" font-size="11" fill="#555">
+    ALL REPOS. ALL NIGHTS.
+  </text>
+
+  <text x="760" y="938" font-size="10" fill="#555" text-anchor="end">
+    DOORS OPEN
+  </text>
+
+  <text x="760" y="956" font-size="15" fill="#f5f0e8" text-anchor="end">
+    ALWAYS
+  </text>
+</svg>
+`;
 }
 
 export async function GET() {
@@ -305,7 +349,7 @@ export async function GET() {
     status: 200,
     headers: {
       "Content-Type": "image/svg+xml",
-      "Cache-Control": "s-maxage=3600, stale-while-revalidate"
-    }
+      "Cache-Control": "s-maxage=3600, stale-while-revalidate",
+    },
   });
 }
