@@ -1,8 +1,311 @@
+import https from "https";
+
+function fetchJSON(url, token) {
+  return new Promise((resolve, reject) => {
+    const opts = {
+      headers: {
+        "User-Agent": "rave271-card",
+        Accept: "application/vnd.github.v3+json",
+        ...(token ? { Authorization: `token ${token}` } : {}),
+      },
+    };
+
+    https.get(url, opts, (res) => {
+      let data = "";
+
+      res.on("data", (chunk) => {
+        data += chunk;
+      });
+
+      res.on("end", () => {
+        try {
+          resolve(JSON.parse(data));
+        } catch (err) {
+          reject(err);
+        }
+      });
+    }).on("error", reject);
+  });
+}
+
+async function getGitHubStats(username, token) {
+  try {
+    const [user, repos] = await Promise.all([
+      fetchJSON(`https://api.github.com/users/${username}`, token),
+      fetchJSON(
+        `https://api.github.com/users/${username}/repos?per_page=100&sort=pushed`,
+        token
+      ),
+    ]);
+
+    const stars = repos.reduce(
+      (acc, repo) => acc + repo.stargazers_count,
+      0
+    );
+
+    const langs = {};
+
+    repos.forEach((repo) => {
+      if (repo.language) {
+        langs[repo.language] = (langs[repo.language] || 0) + 1;
+      }
+    });
+
+    const topLangs = Object.entries(langs)
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 3)
+      .map(([lang]) => lang);
+
+    return {
+      name: user.name || username,
+      followers: user.followers || 0,
+      public_repos: user.public_repos || 0,
+      stars,
+      topLangs,
+    };
+  } catch (error) {
+    console.error(error);
+
+    return {
+      name: "Raghav Verma",
+      followers: 0,
+      public_repos: 0,
+      stars: 0,
+      topLangs: ["Python", "Java", "JavaScript"],
+    };
+  }
+}
+
+function buildBadges() {
+  const items = [
+    "PYTHON",
+    "JAVA",
+    "MERN",
+    "KERAS",
+    "SCIKIT-LEARN",
+    "PANDAS",
+    "NUMPY",
+    "LINUX",
+  ];
+
+  const out = [];
+  let x = 48;
+  let y = 530;
+
+  items.forEach((label) => {
+    const width = label.length * 8 + 20;
+    const isKeras = label === "KERAS";
+
+    out.push(`
+      <rect 
+        x="${x}" 
+        y="${y}" 
+        width="${width}" 
+        height="24" 
+        fill="none" 
+        stroke="${isKeras ? "#cc2200" : "#2a2a2a"}" 
+        stroke-width="1"
+      />
+    `);
+
+    out.push(`
+      <text
+        x="${x + width / 2}"
+        y="${y + 15}"
+        font-family="Arial"
+        font-size="10"
+        fill="${isKeras ? "#cc2200" : "#aaa"}"
+        text-anchor="middle"
+        letter-spacing="2"
+      >
+        ${label}
+      </text>
+    `);
+
+    x += width + 8;
+
+    if (x > 700) {
+      x = 48;
+      y += 32;
+    }
+  });
+
+  return out.join("");
+}
+
+function buildSVG(stats) {
+  const { public_repos, stars, topLangs } = stats;
+  const langStr = topLangs.join("  ·  ");
+
+  const width = 800;
+  const height = 980;
+
+  return `
+  <svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}">
+    
+    <rect width="100%" height="100%" fill="#0f0f0f"/>
+
+    <!-- cream header -->
+    <rect x="40" y="30" width="720" height="260" fill="#f5f0e8" stroke="#1a1a1a" stroke-width="5"/>
+    <rect x="46" y="36" width="708" height="248" fill="none" stroke="#1a1a1a" stroke-width="2"/>
+
+    <text 
+      x="400" 
+      y="155" 
+      font-size="110" 
+      font-weight="900"
+      fill="#1a1a1a"
+      text-anchor="middle"
+      font-family="Impact, Arial"
+    >
+      RAVE 271
+    </text>
+
+    <text
+      x="400"
+      y="200"
+      font-size="14"
+      fill="#555"
+      text-anchor="middle"
+      letter-spacing="6"
+      font-family="Arial"
+    >
+      RAGHAV VERMA · ML · SYSTEMS · FULL STACK
+    </text>
+
+    <rect x="316" y="218" width="168" height="26" fill="none" stroke="#cc2200" stroke-width="2"/>
+
+    <text
+      x="400"
+      y="236"
+      font-size="11"
+      fill="#cc2200"
+      text-anchor="middle"
+      letter-spacing="3"
+      font-family="Arial"
+    >
+      LIVE & UNCUT
+    </text>
+
+    <line x1="40" y1="315" x2="760" y2="315" stroke="#2a2a2a"/>
+
+    <text
+      x="400"
+      y="350"
+      font-size="12"
+      fill="#555"
+      text-anchor="middle"
+      letter-spacing="4"
+      font-family="Courier New"
+    >
+      — ALSO FEATURING —
+    </text>
+
+    <text
+      x="400"
+      y="400"
+      font-size="42"
+      fill="#f5f0e8"
+      text-anchor="middle"
+      font-family="Impact"
+    >
+      MACHINE LEARNING
+    </text>
+
+    <text
+      x="400"
+      y="475"
+      font-size="42"
+      fill="#f5f0e8"
+      text-anchor="middle"
+      font-family="Impact"
+    >
+      SYSTEMS & FULL STACK
+    </text>
+
+    <line x1="40" y1="505" x2="760" y2="505" stroke="#2a2a2a"/>
+
+    ${buildBadges()}
+
+    <line x1="40" y1="585" x2="760" y2="585" stroke="#2a2a2a"/>
+
+    <!-- repo box -->
+    <rect x="40" y="600" width="220" height="100" fill="#161616" stroke="#2a2a2a"/>
+    <text x="150" y="658" font-size="44" fill="#f5f0e8" text-anchor="middle">${public_repos}</text>
+    <text x="150" y="682" font-size="11" fill="#555" text-anchor="middle">REPOS</text>
+
+    <!-- stars box -->
+    <rect x="290" y="600" width="220" height="100" fill="#161616" stroke="#2a2a2a"/>
+    <text x="400" y="658" font-size="44" fill="#f5f0e8" text-anchor="middle">${stars}</text>
+    <text x="400" y="682" font-size="11" fill="#555" text-anchor="middle">STARS</text>
+
+    <!-- active box -->
+    <rect x="540" y="600" width="220" height="100" fill="#161616" stroke="#2a2a2a"/>
+    <text x="650" y="655" font-size="38" fill="#cc2200" text-anchor="middle">↑</text>
+    <text x="650" y="682" font-size="11" fill="#555" text-anchor="middle">ACTIVE</text>
+
+    <line x1="40" y1="725" x2="760" y2="725" stroke="#cc2200"/>
+
+    <text x="60" y="768" font-size="15" fill="#888">// quiet systems</text>
+    <text x="60" y="798" font-size="15" fill="#888">// sharp logic</text>
+    <text x="60" y="828" font-size="15" fill="#888">// beautiful code</text>
+
+    <text
+      x="760"
+      y="798"
+      font-size="12"
+      fill="#444"
+      text-anchor="end"
+    >
+      ${langStr.toUpperCase()}
+    </text>
+
+    <line x1="40" y1="855" x2="760" y2="855" stroke="#cc2200"/>
+
+    <text
+      x="400"
+      y="885"
+      font-size="11"
+      fill="#444"
+      text-anchor="middle"
+    >
+      ★ NO HYPE · JUST SHIPS · ALL SHOWS ★
+    </text>
+
+    <line x1="40" y1="910" x2="760" y2="910" stroke="#2a2a2a"/>
+
+    <text x="40" y="938" font-size="16" fill="#f5f0e8">
+      GITHUB.COM/RAVE271
+    </text>
+
+    <text x="40" y="956" font-size="11" fill="#555">
+      ALL REPOS. ALL NIGHTS.
+    </text>
+
+    <text x="760" y="938" font-size="10" fill="#555" text-anchor="end">
+      DOORS OPEN
+    </text>
+
+    <text x="760" y="956" font-size="15" fill="#f5f0e8" text-anchor="end">
+      ALWAYS
+    </text>
+
+  </svg>
+  `;
+}
+
 export async function GET() {
-  return new Response("API WORKS", {
+  const username = "Rave271";
+  const token = process.env.GITHUB_TOKEN;
+
+  const stats = await getGitHubStats(username, token);
+  const svg = buildSVG(stats);
+
+  return new Response(svg, {
     status: 200,
     headers: {
-      "Content-Type": "text/plain"
+      "Content-Type": "image/svg+xml",
+      "Cache-Control": "s-maxage=3600, stale-while-revalidate"
     }
   });
 }
