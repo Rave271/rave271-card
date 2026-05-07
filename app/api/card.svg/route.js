@@ -1,4 +1,141 @@
-// ... (fetchJSON, getGitHubStats, buildBadges unchanged)
+import https from "https";
+
+// Prevent Next.js from statically prerendering this API route
+export const dynamic = 'force-dynamic';
+
+function fetchJSON(url, token) {
+  return new Promise((resolve, reject) => {
+    const options = {
+      headers: {
+        "User-Agent": "rave271-card",
+        Accept: "application/vnd.github.v3+json",
+        ...(token ? { Authorization: `token ${token}` } : {}),
+      },
+    };
+
+    https
+      .get(url, options, (res) => {
+        let data = "";
+
+        res.on("data", (chunk) => {
+          data += chunk;
+        });
+
+        res.on("end", () => {
+          try {
+            resolve(JSON.parse(data));
+          } catch (err) {
+            reject(err);
+          }
+        });
+      })
+      .on("error", reject);
+  });
+}
+
+async function getGitHubStats(username, token) {
+  try {
+    const [user, repos] = await Promise.all([
+      fetchJSON(`https://api.github.com/users/${username}`, token),
+      fetchJSON(
+        `https://api.github.com/users/${username}/repos?per_page=100&sort=pushed`,
+        token
+      ),
+    ]);
+
+    const stars = repos.reduce(
+      (acc, repo) => acc + repo.stargazers_count,
+      0
+    );
+
+    const langs = {};
+
+    repos.forEach((repo) => {
+      if (repo.language) {
+        langs[repo.language] = (langs[repo.language] || 0) + 1;
+      }
+    });
+
+    const topLangs = Object.entries(langs)
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 3)
+      .map(([lang]) => lang);
+
+    return {
+      name: user.name || username,
+      followers: user.followers || 0,
+      public_repos: user.public_repos || 0,
+      stars,
+      topLangs,
+    };
+  } catch (error) {
+    console.error(error);
+
+    return {
+      name: "Raghav Verma",
+      followers: 0,
+      public_repos: 0,
+      stars: 0,
+      topLangs: ["Python", "Java", "JavaScript"],
+    };
+  }
+}
+
+function buildBadges() {
+  const items = [
+    "PYTHON",
+    "JAVA",
+    "MERN",
+    "KERAS",
+    "SCIKIT-LEARN",
+    "PANDAS",
+    "NUMPY",
+    "LINUX",
+  ];
+
+  const output = [];
+  let x = 48;
+  let y = 530;
+
+  items.forEach((label) => {
+    const width = label.length * 8 + 20;
+    const isKeras = label === "KERAS";
+
+    output.push(`
+      <rect 
+        x="${x}" 
+        y="${y}" 
+        width="${width}" 
+        height="24"
+        fill="none"
+        stroke="${isKeras ? "#cc2200" : "#2a2a2a"}"
+        stroke-width="1"
+      />
+    `);
+
+    output.push(`
+      <text
+        x="${x + width / 2}"
+        y="${y + 15}"
+        font-size="10"
+        fill="${isKeras ? "#cc2200" : "#aaa"}"
+        text-anchor="middle"
+        font-family="Arial"
+      >
+        ${label}
+      </text>
+    `);
+
+    x += width + 8;
+
+    if (x > 700) {
+      x = 48;
+      y += 32;
+    }
+  });
+
+  return output.join("");
+}
 
 function buildSVG(stats) {
   const { public_repos, stars, topLangs, followers } = stats;
@@ -137,7 +274,7 @@ function buildSVG(stats) {
     STARS
   </text>
 
-  <!-- FOLLOWERS (replaces ACTIVE) -->
+  <!-- FOLLOWERS -->
   <rect x="540" y="600" width="220" height="100" fill="#161616" stroke="#2a2a2a"/>
   <text x="650" y="658" font-size="44" fill="#f5f0e8" text-anchor="middle">
     ${followers}
@@ -148,17 +285,17 @@ function buildSVG(stats) {
 
   <line x1="40" y1="725" x2="760" y2="725" stroke="#cc2200"/>
 
-  <!-- PHILOSOPHY (updated) -->
+  <!-- PHILOSOPHY (restored original wording) -->
   <text x="60" y="768" font-size="15" fill="#888">
-    // minimalism
+    // quiet systems
   </text>
 
   <text x="60" y="798" font-size="15" fill="#888">
-    // performance
+    // sharp logic
   </text>
 
   <text x="60" y="828" font-size="15" fill="#888">
-    // scalability
+    // beautiful code
   </text>
 
   <text
@@ -215,7 +352,7 @@ export async function GET() {
     status: 200,
     headers: {
       "Content-Type": "image/svg+xml",
-      "Cache-Control": "s-maxage=3600, stale-while-revalidate",
+      "Cache-Control": "no-cache, no-store, must-revalidate",
     },
   });
 }
