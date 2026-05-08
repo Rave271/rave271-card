@@ -425,7 +425,7 @@ export async function GET() {
     headers: {
       "Content-Type": "image/svg+xml",
       "Cache-Control":
-        "s-maxage=3600, stale-while-revalidate",
+        "no-store",
     },
   });
 }
