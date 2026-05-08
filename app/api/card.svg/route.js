@@ -89,7 +89,7 @@ async function getGitHubStats(username, token) {
 
 /* ---------------- LAST.FM ---------------- */
 async function getNowPlaying() {
-  const apiKey = process.env.LASTFM_API_KEY;
+  const apiKey ="18ee6ffe16e046b94dccef21b8cd7896";
   const username = "Rave271";
 
   try {
