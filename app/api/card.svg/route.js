@@ -17,9 +17,7 @@ function fetchJSON(url, token) {
     https
       .get(
         url,
-        {
-          headers,
-        },
+        { headers },
         (res) => {
           let data = "";
 
@@ -91,8 +89,8 @@ async function getGitHubStats(username, token) {
 
 /* ---------------- LAST.FM ---------------- */
 async function getNowPlaying() {
-  const apiKey = "18ee6ffe16e046b94dccef21b8cd7896"; // replace this
-  const username = "Rave271"; // replace this
+  const apiKey = process.env.LASTFM_API_KEY;
+  const username = "Rave271";
 
   try {
     const data = await fetchJSON(
@@ -313,30 +311,18 @@ function buildSVG(stats, music) {
 
   <!-- REPOS -->
   <rect x="40" y="600" width="220" height="100" fill="#161616" stroke="#2a2a2a"/>
-  <text x="150" y="658" font-size="44" fill="#f5f0e8" text-anchor="middle">
-    ${public_repos}
-  </text>
-  <text x="150" y="682" font-size="11" fill="#555" text-anchor="middle">
-    REPOS
-  </text>
+  <text x="150" y="658" font-size="44" fill="#f5f0e8" text-anchor="middle">${public_repos}</text>
+  <text x="150" y="682" font-size="11" fill="#555" text-anchor="middle">REPOS</text>
 
   <!-- STARS -->
   <rect x="290" y="600" width="220" height="100" fill="#161616" stroke="#2a2a2a"/>
-  <text x="400" y="658" font-size="44" fill="#f5f0e8" text-anchor="middle">
-    ${stars}
-  </text>
-  <text x="400" y="682" font-size="11" fill="#555" text-anchor="middle">
-    STARS
-  </text>
+  <text x="400" y="658" font-size="44" fill="#f5f0e8" text-anchor="middle">${stars}</text>
+  <text x="400" y="682" font-size="11" fill="#555" text-anchor="middle">STARS</text>
 
   <!-- FOLLOWERS -->
   <rect x="540" y="600" width="220" height="100" fill="#161616" stroke="#2a2a2a"/>
-  <text x="650" y="658" font-size="44" fill="#f5f0e8" text-anchor="middle">
-    ${followers}
-  </text>
-  <text x="650" y="682" font-size="11" fill="#555" text-anchor="middle">
-    FOLLOWERS
-  </text>
+  <text x="650" y="658" font-size="44" fill="#f5f0e8" text-anchor="middle">${followers}</text>
+  <text x="650" y="682" font-size="11" fill="#555" text-anchor="middle">FOLLOWERS</text>
 
   <line x1="40" y1="725" x2="760" y2="725" stroke="#cc2200"/>
 
@@ -351,7 +337,7 @@ function buildSVG(stats, music) {
     text-anchor="middle"
     font-family="Arial"
   >
-    LIVE TRANSMISSION
+    SOUNDTRACK TO SHIPPING
   </text>
 
   <text
@@ -384,7 +370,7 @@ function buildSVG(stats, music) {
     text-anchor="middle"
     font-family="Arial"
   >
-    ${playing ? "SIGNAL ACTIVE" : "LAST TRANSMISSION"}
+    ${playing ? "PLAYING NOW" : "LAST PLAYED"}
   </text>
 
   <line x1="40" y1="910" x2="760" y2="910" stroke="#2a2a2a"/>
@@ -394,15 +380,15 @@ function buildSVG(stats, music) {
   </text>
 
   <text x="40" y="956" font-size="11" fill="#555">
-    ALL REPOS. ALL NIGHTS.
+    BUILD. BREAK. REPEAT.
   </text>
 
   <text x="760" y="938" font-size="10" fill="#555" text-anchor="end">
-    COLLABORATE
+    STATUS
   </text>
 
   <text x="760" y="956" font-size="15" fill="#f5f0e8" text-anchor="end">
-    OPEN
+    ONLINE
   </text>
 </svg>
 `;
@@ -424,8 +410,7 @@ export async function GET() {
     status: 200,
     headers: {
       "Content-Type": "image/svg+xml",
-      "Cache-Control":
-        "no-store",
+      "Cache-Control": "no-store",
     },
   });
 }
