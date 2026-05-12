@@ -38,6 +38,22 @@ function fetchJSON(url, token) {
   });
 }
 
+/* ---------------- TEXT HELPERS ---------------- */
+function escapeXML(str = "") {
+  return str
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&apos;");
+}
+
+function truncateText(str = "", maxLength = 30) {
+  if (str.length <= maxLength) return str;
+
+  return str.slice(0, maxLength - 3).trim() + "...";
+}
+
 /* ---------------- GITHUB STATS ---------------- */
 async function getGitHubStats(username, token) {
   try {
@@ -89,7 +105,7 @@ async function getGitHubStats(username, token) {
 
 /* ---------------- LAST.FM ---------------- */
 async function getNowPlaying() {
-  const apiKey ="18ee6ffe16e046b94dccef21b8cd7896";
+  const apiKey = process.env.LASTFM_API_KEY;
   const username = "Rave271";
 
   try {
@@ -188,6 +204,14 @@ function buildBadges() {
 function buildSVG(stats, music) {
   const { public_repos, stars, followers } = stats;
   const { song, artist, playing } = music;
+
+  const safeSong = escapeXML(
+    truncateText(song.toUpperCase(), 28)
+  );
+
+  const safeArtist = escapeXML(
+    truncateText(artist.toUpperCase(), 32)
+  );
 
   return `
 <svg 
@@ -348,7 +372,7 @@ function buildSVG(stats, music) {
     text-anchor="middle"
     font-family="Impact"
   >
-    ${song.toUpperCase().slice(0, 30)}
+    ${safeSong}
   </text>
 
   <text
@@ -359,7 +383,7 @@ function buildSVG(stats, music) {
     text-anchor="middle"
     font-family="Arial"
   >
-    ${artist.toUpperCase().slice(0, 35)}
+    ${safeArtist}
   </text>
 
   <text
