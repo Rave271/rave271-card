@@ -107,7 +107,11 @@ function buildBadges(startY) {
     x += w + GAP;
   });
 
-  return out.join("");
+  // height = rows used, from startY to bottom of last row + padding
+  const lastRowBottom = y + H;
+  const totalHeight = lastRowBottom - startY + 17; // 17px bottom padding
+
+  return { svg: out.join(""), height: totalHeight };
 }
 
 /* ---------------- SVG ---------------- */
@@ -134,10 +138,15 @@ function buildSVG(stats, music) {
   const CX = 40, CW = 720;
   const HERO_Y  = 30,  HERO_H  = 230;
   const FOCUS_Y = 260, FOCUS_H = 178;
-  const TAGS_Y  = 438, TAGS_H  = 60;
-  const STATS_Y = 498, STATS_H = 102;
-  const MUSIC_Y = 600, MUSIC_H = 148;
-  const FOOT_Y  = 748, FOOT_H  = 50;
+  const TAGS_Y  = 438;
+  const badges  = buildBadges(TAGS_Y + 17);
+  const TAGS_H  = badges.height;
+  const STATS_Y = TAGS_Y + TAGS_H;
+  const STATS_H = 102;
+  const MUSIC_Y = STATS_Y + STATS_H;
+  const MUSIC_H = 148;
+  const FOOT_Y  = MUSIC_Y + MUSIC_H;
+  const FOOT_H  = 50;
   const TOTAL   = FOOT_Y + FOOT_H + 10;
 
   return `<svg xmlns="http://www.w3.org/2000/svg" width="800" height="${TOTAL}" viewBox="0 0 800 ${TOTAL}">
@@ -169,7 +178,7 @@ function buildSVG(stats, music) {
 
   <!-- ── TAGS: black bg ── -->
   <rect x="${CX}" y="${TAGS_Y}" width="${CW}" height="${TAGS_H}" fill="${BLACK}" stroke="${BORDER}" stroke-width="${BW}"/>
-  ${buildBadges(TAGS_Y + 17)}
+  ${badges.svg}
 
   <!-- ── STATS: black bg, 3 columns ── -->
   <rect x="${CX}" y="${STATS_Y}" width="${CW}" height="${STATS_H}" fill="${BLACK}" stroke="${BORDER}" stroke-width="${BW}"/>
@@ -203,8 +212,7 @@ function buildSVG(stats, music) {
   <text x="${CX + 18}" y="${FOOT_Y + 22}" font-size="15" font-weight="700" fill="${PAPER}" font-family="Arial, sans-serif" letter-spacing="0.04em">GITHUB.COM/RAVE271</text>
   <text x="${CX + 18}" y="${FOOT_Y + 40}" font-size="10" fill="${MID}" font-family="Arial, sans-serif" letter-spacing="0.1em">BUILD. BREAK. REPEAT.</text>
 
-  <text x="${CX + CW - 18}" y="${FOOT_Y + 20}" font-size="9" fill="${MID}" text-anchor="end" font-family="Arial, sans-serif" letter-spacing="0.12em">STATUS</text>
-  <text x="${CX + CW - 18}" y="${FOOT_Y + 40}" font-size="15" font-weight="900" fill="#33bb33" text-anchor="end" font-family="Arial, sans-serif" letter-spacing="0.08em">ONLINE</text>
+  <text x="${CX + CW - 18}" y="${FOOT_Y + 33}" font-size="15" font-weight="900" fill="#33bb33" text-anchor="end" font-family="Arial, sans-serif" letter-spacing="0.08em">SS03</text>
 
 </svg>`;
 }
