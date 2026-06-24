@@ -81,11 +81,12 @@ function buildBadges(startY) {
     { label: "PYTHON",      active: false },
     { label: "JAVA",        active: false },
     { label: "MERN",        active: false },
-    { label: "KERAS",       active: true  },
+    { label: "KERAS",       active: false },
     { label: "SCIKIT-LEARN",active: false },
     { label: "PANDAS",      active: false },
     { label: "NUMPY",       active: false },
-    { label: "LINUX",       active: false },
+    { label: "MYSQL",       active: false },
+    { label: "ELK",         active: false },
   ];
 
   const CHAR_W = 7.5, PAD = 22, H = 26, GAP = 8;
@@ -212,7 +213,7 @@ function buildSVG(stats, music) {
   <text x="${CX + 18}" y="${FOOT_Y + 22}" font-size="15" font-weight="700" fill="${PAPER}" font-family="Arial, sans-serif" letter-spacing="0.04em">GITHUB.COM/RAVE271</text>
   <text x="${CX + 18}" y="${FOOT_Y + 40}" font-size="10" fill="${MID}" font-family="Arial, sans-serif" letter-spacing="0.1em">BUILD. BREAK. REPEAT.</text>
 
-  <text x="${CX + CW - 18}" y="${FOOT_Y + 33}" font-size="14" font-weight="300" fill="#33bb33" text-anchor="end" font-family="'Helvetica Neue', Helvetica, 'Arial Narrow', Arial, sans-serif" letter-spacing="0.35em">SS03</text>
+  <text x="${CX + CW - 18}" y="${FOOT_Y + 33}" font-size="14" font-weight="300" fill="#ffffff" text-anchor="end" font-family="'Helvetica Neue', Helvetica, 'Arial Narrow', Arial, sans-serif" letter-spacing="0.35em">SS03</text>
 
 </svg>`;
 }
